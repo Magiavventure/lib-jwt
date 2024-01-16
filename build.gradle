@@ -1,0 +1,105 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
+plugins {
+	id 'java-library'
+	id 'org.springframework.boot' version '3.2.1' apply false
+	id 'io.spring.dependency-management' version '1.1.4'
+	id 'jacoco'
+	id 'maven-publish'
+	id 'com.github.jmongard.git-semver-plugin' version '0.11.0'
+}
+
+semver {
+	noDirtyCheck = true
+}
+
+group = 'it.magiavventure'
+version = semver.version
+
+java {
+	sourceCompatibility = '17'
+}
+
+test {
+	useJUnitPlatform()
+	finalizedBy jacocoTestReport
+}
+
+dependencyManagement {
+	imports {
+		mavenBom SpringBootPlugin.BOM_COORDINATES
+	}
+}
+
+jacocoTestReport {
+	reports {
+		xml.required = true
+	}
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it,
+					exclude: [
+							'*/magiavventure/**/model**',
+							'*/magiavventure/**/configuration**'
+					])
+		}))
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		url = uri("https://maven.pkg.github.com/Magiavventure/magiavventure-registry")
+		credentials {
+			username = project.findProperty("user") ?: System.getenv("USERNAME")
+			password = project.findProperty("token") ?: System.getenv("TOKEN")
+		}
+	}
+}
+
+ext {
+	commonVersion = '1.0.2'
+	jwtVersion = '0.12.3'
+	mapstructVersion = '1.5.5.Final'
+}
+
+dependencies {
+	implementation "it.magiavventure:lib-common:$commonVersion"
+	implementation "org.springframework.boot:spring-boot-starter-security"
+	implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
+	implementation "org.mapstruct:mapstruct:$mapstructVersion"
+
+	runtimeOnly "io.jsonwebtoken:jjwt-impl:$jwtVersion"
+	runtimeOnly "io.jsonwebtoken:jjwt-jackson:$jwtVersion"
+	compileOnly 'org.projectlombok:lombok'
+	annotationProcessor 'org.projectlombok:lombok'
+	annotationProcessor "org.mapstruct:mapstruct-processor:$mapstructVersion"
+
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+publishing {
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Magiavventure/magiavventure-registry")
+			credentials {
+				username = project.findProperty("user") ?: System.getenv("USERNAME")
+				password = project.findProperty("token") ?: System.getenv("TOKEN")
+			}
+		}
+	}
+	publications {
+		gpr(MavenPublication) {
+			from(components.java)
+		}
+	}
+}
+
+build.dependsOn jacocoTestReport
