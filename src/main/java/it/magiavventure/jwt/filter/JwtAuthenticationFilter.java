@@ -1,11 +1,11 @@
 package it.magiavventure.jwt.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.common.model.User;
 import it.magiavventure.jwt.config.JwtProperties;
-import it.magiavventure.jwt.error.JwtException;
 import it.magiavventure.jwt.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -50,8 +50,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
-        } catch(JwtException jwtException) {
-            handleException(response, jwtException);
+        } catch(MagiavventureException magiavventureException) {
+            handleException(response, magiavventureException);
         }
     }
 
@@ -64,9 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void handleException(HttpServletResponse response,
-                                 JwtException jwtException) throws IOException {
+                                 MagiavventureException magiavventureException) throws IOException {
         ResponseEntity<HttpError> responseEntity
-                = defaultExceptionHandler.exceptionHandler(jwtException);
+                = defaultExceptionHandler.exceptionHandler(magiavventureException);
         response.setStatus(responseEntity.getStatusCode().value());
         response.setContentType("application/json");
         ObjectMapper mapper = new ObjectMapper();
