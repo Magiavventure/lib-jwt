@@ -1,2 +1,2 @@
-it.magiavventure.jwt.configuration.SecurityConfig
-it.magiavventure.jwt.configuration.JwtProperties
+it.magiavventure.jwt.config.SecurityConfig
+it.magiavventure.jwt.config.JwtProperties
