@@ -1,4 +1,4 @@
-package it.magiavventure.jwt.security;
+package it.magiavventure.jwt.config;
 
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.jwt.config.JwtProperties;
