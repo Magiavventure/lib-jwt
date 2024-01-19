@@ -11,17 +11,18 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.util.AntPathMatcher;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,16 +58,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        return Arrays.stream(Optional.ofNullable(jwtProperties)
-                .map(JwtProperties::getExcludedEndpoints)
-                .orElse(new String[]{}))
-                .anyMatch(e -> new AntPathMatcher().match(e, request.getServletPath()));
+        return Optional.ofNullable(jwtProperties.getExcludedEndpoints())
+                .orElse(new ArrayList<>())
+                .stream()
+                .anyMatch(exEndpoint -> AntPathRequestMatcher.antMatcher(
+                        HttpMethod.valueOf(exEndpoint.getMethod()), exEndpoint.getPath()).matches(request));
     }
 
     private void handleException(HttpServletResponse response,
                                  MagiavventureException magiavventureException) throws IOException {
         ResponseEntity<HttpError> responseEntity
-                = defaultExceptionHandler.exceptionHandler(magiavventureException);
+                = defaultExceptionHandler.handleException(magiavventureException);
         response.setStatus(responseEntity.getStatusCode().value());
         response.setContentType("application/json");
         ObjectMapper mapper = new ObjectMapper();

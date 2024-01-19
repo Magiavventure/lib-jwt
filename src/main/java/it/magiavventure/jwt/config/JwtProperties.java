@@ -12,10 +12,11 @@ public class JwtProperties {
     private Long validity;
     private String header;
     private List<EndpointProperties> endpoints;
-    private String[] excludedEndpoints;
+    private List<EndpointProperties> excludedEndpoints;
 
     @Data
     public static class EndpointProperties {
+        private String method;
         private String path;
         private String[] roles;
         private Boolean authenticated;
