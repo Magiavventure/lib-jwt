@@ -1,7 +1,7 @@
 # Magiavventure - Lib jwt
 
 ![GitHub Release](https://img.shields.io/github/v/release/Magiavventure/lib-jwt)
-[![codecov](https://codecov.io/gh/Magiavventure/lib-jwt/graph/badge.svg?token=S049F9NFTF)](https://codecov.io/gh/Magiavventure/lib-jwt)
+[![codecov](https://codecov.io/gh/Magiavventure/lib-jwt/graph/badge.svg?token=CNGYZAUIWC)](https://codecov.io/gh/Magiavventure/lib-jwt)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Magiavventure/lib-jwt/build.yml)
 
 This library takes care of managing the security of the endpoints with spring security and the management of the jwt.
