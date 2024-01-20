@@ -40,7 +40,8 @@ jacocoTestReport {
 			fileTree(dir: it,
 					exclude: [
 							'*/magiavventure/**/model**',
-							'*/magiavventure/**/configuration**'
+							'*/magiavventure/**/config**',
+							'*/magiavventure/**/error**'
 					])
 		}))
 	}
@@ -64,7 +65,7 @@ repositories {
 }
 
 ext {
-	commonVersion = '1.1.5'
+	commonVersion = '1.1.7'
 	jwtVersion = '0.12.3'
 	mapstructVersion = '1.5.5.Final'
 }
