@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import it.magiavventure.common.error.MagiavventureException;
-import it.magiavventure.common.model.User;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.error.JwtException;
+import it.magiavventure.jwt.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
@@ -55,12 +55,14 @@ public class JwtService {
             return jwtParser.parseSignedClaims(jwt).getPayload();
         } catch (ExpiredJwtException exception) {
             throw MagiavventureException.of(JwtException.JWT_EXPIRED);
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException exception) {
+            throw MagiavventureException.of(JwtException.JWT_NOT_VALID);
         }
     }
 
     public String resolveAndValidateToken(HttpServletRequest request) {
         String token = resolveToken(request);
-        validateJwt(token);
+        parseJwtClaims(token);
         return token;
     }
     
@@ -73,13 +75,8 @@ public class JwtService {
 
     private String resolveToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(jwtProperties.getHeader()))
+                .filter(token -> !token.isEmpty() && !token.isBlank())
                 .orElseThrow(() -> MagiavventureException.of(JwtException.JWT_NOT_VALID));
-    }
-
-    private void validateJwt(String jwt) {
-        Claims claims = parseJwtClaims(jwt);
-        if (claims.getExpiration().before(new Date()))
-            throw MagiavventureException.of(JwtException.JWT_EXPIRED);
     }
 
     private Date getExpiration() {

@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.common.model.HttpError;
-import it.magiavventure.common.model.User;
 import it.magiavventure.jwt.config.JwtProperties;
+import it.magiavventure.jwt.model.Authority;
+import it.magiavventure.jwt.model.User;
 import it.magiavventure.jwt.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -45,9 +46,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtService.resolveAndValidateToken(request);
             User user = jwtService.getUser(token);
-            //TODO edit authorities
+            List<SimpleGrantedAuthority> authorities = Optional.ofNullable(user.getAuthorities())
+                    .orElse(new ArrayList<>())
+                    .stream()
+                    .map(Authority::getName)
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user,
-                    null, List.of(new SimpleGrantedAuthority("user")));
+                    null, authorities);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             filterChain.doFilter(request, response);
