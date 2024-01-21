@@ -5,9 +5,8 @@ import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
-import it.magiavventure.jwt.model.Authority;
-import it.magiavventure.jwt.model.User;
 import it.magiavventure.jwt.service.JwtService;
+import it.magiavventure.mongo.model.User;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -49,7 +48,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             List<SimpleGrantedAuthority> authorities = Optional.ofNullable(user.getAuthorities())
                     .orElse(new ArrayList<>())
                     .stream()
-                    .map(Authority::getName)
                     .map(SimpleGrantedAuthority::new)
                     .toList();
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user,

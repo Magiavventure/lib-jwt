@@ -4,9 +4,8 @@ import io.jsonwebtoken.Claims;
 import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.model.Error;
 import it.magiavventure.jwt.config.JwtProperties;
-import it.magiavventure.jwt.model.Authority;
-import it.magiavventure.jwt.model.Category;
-import it.magiavventure.jwt.model.User;
+import it.magiavventure.mongo.model.Category;
+import it.magiavventure.mongo.model.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -109,7 +108,6 @@ class JwtServiceTest {
     @Test
     @DisplayName("Get not valid JWT from request to parse")
     void givenNotValidJwt_throwException_ok() {
-        User user = buildUser();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", "fwfwefwefwefwe");
         MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
@@ -132,11 +130,7 @@ class JwtServiceTest {
                         .name("name")
                         .background("background")
                         .build()))
-                .authorities(List.of(Authority
-                        .builder()
-                        .id(UUID.randomUUID())
-                        .name("user")
-                        .build()))
+                .authorities(List.of("user"))
                 .build();
     }
 

@@ -1,7 +1,6 @@
 package it.magiavventure.jwt.config;
 
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
-import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.filter.JwtAuthenticationFilter;
 import it.magiavventure.jwt.service.JwtService;
 import lombok.extern.slf4j.Slf4j;
