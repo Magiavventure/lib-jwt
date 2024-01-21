@@ -51,7 +51,7 @@ public class SecurityConfig {
                                 endpoint.getPath(), endpoint.getAuthenticated(), endpoint.getRoles());
                         var requestMatcher = requests.requestMatchers(endpoint.getPath());
                         if (Objects.nonNull(endpoint.getRoles()) && endpoint.getRoles().length > 0) {
-                            requestMatcher.hasAnyRole(endpoint.getRoles());
+                            requestMatcher.hasAnyAuthority(endpoint.getRoles());
                         }
                         if (Boolean.TRUE.equals(endpoint.getAuthenticated())) {
                             requestMatcher.authenticated();
