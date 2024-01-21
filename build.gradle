@@ -66,12 +66,14 @@ repositories {
 
 ext {
 	commonVersion = '1.1.7'
+	mongoVersion = '1.0.0'
 	jwtVersion = '0.12.3'
 	mapstructVersion = '1.5.5.Final'
 }
 
 dependencies {
 	implementation "it.magiavventure:common:$commonVersion"
+	implementation "it.magiavventure:mongo:$mongoVersion"
 	implementation "org.springframework.boot:spring-boot-starter-security"
 	implementation "io.jsonwebtoken:jjwt-api:$jwtVersion"
 	implementation "org.mapstruct:mapstruct:$mapstructVersion"

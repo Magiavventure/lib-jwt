@@ -9,10 +9,9 @@ import it.magiavventure.common.mapper.HttpErrorMapper;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.config.JwtProperties.EndpointProperties;
-import it.magiavventure.jwt.model.Authority;
-import it.magiavventure.jwt.model.Category;
-import it.magiavventure.jwt.model.User;
 import it.magiavventure.jwt.service.JwtService;
+import it.magiavventure.mongo.model.Category;
+import it.magiavventure.mongo.model.User;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -119,8 +118,6 @@ class JwtAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setMethod("GET");
         request.setServletPath("/path");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain filterChain = new MockFilterChain();
 
         boolean shouldNotFilter = jwtAuthenticationFilter.shouldNotFilter(request);
 
@@ -133,8 +130,6 @@ class JwtAuthenticationFilterTest {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setMethod("GET");
         request.setServletPath("/pathnew");
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        MockFilterChain filterChain = new MockFilterChain();
 
         boolean shouldNotFilter = jwtAuthenticationFilter.shouldNotFilter(request);
 
@@ -160,11 +155,7 @@ class JwtAuthenticationFilterTest {
                         .name("name")
                         .background("background")
                         .build()))
-                .authorities(List.of(Authority
-                        .builder()
-                        .id(UUID.randomUUID())
-                        .name("user")
-                        .build()))
+                .authorities(List.of("user"))
                 .build();
     }
 

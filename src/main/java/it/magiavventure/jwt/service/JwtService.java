@@ -8,7 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.error.JwtException;
-import it.magiavventure.jwt.model.User;
+import it.magiavventure.mongo.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
 
