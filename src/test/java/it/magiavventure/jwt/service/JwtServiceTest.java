@@ -119,6 +119,14 @@ class JwtServiceTest {
         Assertions.assertEquals("jwt-not-valid", error.getKey());
     }
 
+    @Test
+    @DisplayName("Get token header")
+    void retrieveTokenHeader_fromJwtProperties_ok(){
+        String headerName = jwtService.getTokenHeader();
+
+        Assertions.assertEquals("mg-a-token", headerName);
+    }
+
     private User buildUser() {
         return User
                 .builder()
