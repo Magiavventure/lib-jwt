@@ -50,6 +50,10 @@ public class JwtService {
                 .compact();
     }
 
+    public String getTokenHeader() {
+        return jwtProperties.getHeader();
+    }
+
     public Claims parseJwtClaims(String jwt) {
         try {
             return jwtParser.parseSignedClaims(jwt).getPayload();

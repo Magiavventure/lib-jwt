@@ -30,4 +30,4 @@ magiavventure.lib.jwt.excludedEndpoints.[n].method=boolean                      
 ## Error message map
 The error message map is a basic system for return the specific message in the error response,
 the configuration path is for the branch **jwt-errors-messages**.
-This branch setting a specific error message to **it.magiavventure.common.error.MagiavventureException**
+This branch setting a specific error message to **it.magiavventure.jwt.error.JwtException**
