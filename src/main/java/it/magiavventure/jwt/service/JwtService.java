@@ -44,9 +44,12 @@ public class JwtService {
 
         return Jwts
                 .builder()
+                .issuer(user.getId().toString())
+                .issuedAt(new Date())
                 .claims(claims)
                 .expiration(getExpiration())
                 .signWith(createSecretKey(jwtProperties.getSecret()))
+                .encodePayload(true)
                 .compact();
     }
 

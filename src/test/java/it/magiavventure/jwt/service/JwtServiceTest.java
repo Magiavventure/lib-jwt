@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -62,25 +64,12 @@ class JwtServiceTest {
         Assertions.assertIterableEquals(user.getAuthorities(), userFromJwt.getAuthorities());
     }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "fwefwefwefwefw"})
     @DisplayName("Get empty JWT from request to parse")
-    void givenEmptyJwt_throwException_ok() {
+    void givenEmptyJwt_throwException_ok(String token) {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("mg-a-token", "");
-        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
-                () -> jwtService.resolveAndValidateToken(request));
-
-        Assertions.assertNotNull(exception);
-        Error error = exception.getError();
-        Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-not-valid", error.getKey());
-    }
-
-    @Test
-    @DisplayName("Get blank JWT from request to parse")
-    void givenBlankJwt_throwException_ok() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("mg-a-token", " ");
+        request.addHeader("mg-a-token", token);
         MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
                 () -> jwtService.resolveAndValidateToken(request));
 
@@ -103,20 +92,6 @@ class JwtServiceTest {
         Error error = exception.getError();
         Assertions.assertNotNull(error);
         Assertions.assertEquals("jwt-expired", error.getKey());
-    }
-
-    @Test
-    @DisplayName("Get not valid JWT from request to parse")
-    void givenNotValidJwt_throwException_ok() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("mg-a-token", "fwfwefwefwefwe");
-        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
-                () -> jwtService.resolveAndValidateToken(request));
-
-        Assertions.assertNotNull(exception);
-        Error error = exception.getError();
-        Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-not-valid", error.getKey());
     }
 
     @Test

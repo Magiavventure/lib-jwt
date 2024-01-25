@@ -1,6 +1,8 @@
 package it.magiavventure.jwt.config;
 
+import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
+import it.magiavventure.jwt.error.JwtException;
 import it.magiavventure.jwt.filter.JwtAuthenticationFilter;
 import it.magiavventure.jwt.service.JwtService;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,14 @@ public class SecurityConfig {
 
         httpSecurity.addFilterBefore(jwtAuthenticationFilter(jwtProperties, jwtService, defaultExceptionHandler),
                 UsernamePasswordAuthenticationFilter.class);
+
+        httpSecurity
+                .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
+                        httpSecurityExceptionHandlingConfigurer
+                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                    throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
+                                }
+                        ));
 
         return httpSecurity.build();
     }
