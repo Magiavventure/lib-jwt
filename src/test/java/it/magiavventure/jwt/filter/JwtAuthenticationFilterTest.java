@@ -10,16 +10,17 @@ import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.config.JwtProperties.EndpointProperties;
 import it.magiavventure.jwt.service.JwtService;
+import it.magiavventure.jwt.service.UserJwtService;
+import it.magiavventure.mongo.entity.EUser;
 import it.magiavventure.mongo.model.Category;
 import it.magiavventure.mongo.model.User;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mapstruct.factory.Mappers;
 import org.mockito.*;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -33,34 +34,42 @@ import java.util.Map;
 import java.util.UUID;
 
 
-@ExtendWith(MockitoExtension.class)
 @DisplayName("Jwt authentication filter tests")
 class JwtAuthenticationFilterTest {
 
-    @InjectMocks
     private JwtAuthenticationFilter jwtAuthenticationFilter;
-    @Spy
-    private JwtService jwtService = new JwtService(buildJwtProperties());
-    @Spy
-    private JwtProperties jwtProperties = buildJwtProperties();
-    @Spy
-    private DefaultExceptionHandler defaultExceptionHandler = new DefaultExceptionHandler(buildCommonProperties(),
-            Mappers.getMapper(HttpErrorMapper.class));
+    private final UserJwtService userJwtService = Mockito.mock(UserJwtService.class);
+
+    @BeforeEach
+    void beforeEach() {
+        JwtProperties jwtProperties = buildJwtProperties();
+        JwtService jwtService = new JwtService(jwtProperties, userJwtService);
+        DefaultExceptionHandler defaultExceptionHandler = new DefaultExceptionHandler(buildCommonProperties(),
+                Mappers.getMapper(HttpErrorMapper.class));
+        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtService, jwtProperties, defaultExceptionHandler);
+    }
 
     @Test
     @DisplayName("Given a valid jwt filter not throw exception")
     void givenValidJwt_chainDoFilter_ok() throws ServletException, IOException {
-        User user = buildUser();
+        UUID id = UUID.randomUUID();
+        User user = buildUser(id);
+        EUser eUser = buildEUser(id);
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", buildToken(user, false));
         MockHttpServletResponse response = new MockHttpServletResponse();
         MockFilterChain filterChain = new MockFilterChain();
 
+        Mockito.when(userJwtService.retrieveById(user.getId()))
+                .thenReturn(eUser);
+
         jwtAuthenticationFilter.doFilterInternal(request, response, filterChain);
+
+        Mockito.verify(userJwtService).retrieveById(user.getId());
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Assertions.assertNotNull(authentication);
-        User userLoggedIn = (User) authentication.getPrincipal();
+        EUser userLoggedIn = (EUser) authentication.getPrincipal();
         Assertions.assertNotNull(userLoggedIn);
         Assertions.assertEquals(user.getId(), userLoggedIn.getId());
         Assertions.assertEquals(user.getName(), userLoggedIn.getName());
@@ -74,7 +83,7 @@ class JwtAuthenticationFilterTest {
     @Test
     @DisplayName("Given an expired jwt filter throw exception with code jwt-expired")
     void givenExpiredJwt_throwExpiredException_ok() throws ServletException, IOException {
-        User user = buildUser();
+        User user = buildUser(UUID.randomUUID());
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", buildToken(user, true));
         MockHttpServletResponse response = new MockHttpServletResponse();
@@ -140,18 +149,33 @@ class JwtAuthenticationFilterTest {
         JwtProperties jwtProperties = buildJwtProperties();
         if(expired)
             jwtProperties.setValidity(0L);
-        JwtService jwtService = new JwtService(jwtProperties);
+        JwtService jwtService = new JwtService(jwtProperties, Mockito.mock(UserJwtService.class));
         return jwtService.buildJwt(user);
     }
 
-    private User buildUser() {
+    private User buildUser(UUID id) {
         return User
                 .builder()
-                .id(UUID.randomUUID())
+                .id(id)
                 .name("name")
                 .preferredCategories(List.of(Category
                         .builder()
-                        .id(UUID.randomUUID())
+                        .id(UUID.fromString("b2609f3d-e31a-4247-886b-ee52dde3dab6"))
+                        .name("name")
+                        .background("background")
+                        .build()))
+                .authorities(List.of("user"))
+                .build();
+    }
+
+    private EUser buildEUser(UUID id) {
+        return EUser
+                .builder()
+                .id(id)
+                .name("name")
+                .preferredCategories(List.of(Category
+                        .builder()
+                        .id(UUID.fromString("b2609f3d-e31a-4247-886b-ee52dde3dab6"))
                         .name("name")
                         .background("background")
                         .build()))

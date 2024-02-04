@@ -6,7 +6,7 @@ import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.service.JwtService;
-import it.magiavventure.mongo.model.User;
+import it.magiavventure.mongo.entity.EUser;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,7 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtProperties jwtProperties;
     private final DefaultExceptionHandler defaultExceptionHandler;
 
-    public JwtAuthenticationFilter(JwtService jwtService, JwtProperties jwtProperties, DefaultExceptionHandler defaultExceptionHandler) {
+    public JwtAuthenticationFilter(JwtService jwtService, JwtProperties jwtProperties,
+                                   DefaultExceptionHandler defaultExceptionHandler) {
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
         this.defaultExceptionHandler = defaultExceptionHandler;
@@ -43,14 +44,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
         try {
-            String token = jwtService.resolveAndValidateToken(request);
-            User user = jwtService.getUser(token);
-            List<SimpleGrantedAuthority> authorities = Optional.ofNullable(user.getAuthorities())
+            String token = jwtService.resolveToken(request);
+            EUser eUser = jwtService.extractUser(token);
+            List<SimpleGrantedAuthority> authorities = Optional.ofNullable(eUser.getAuthorities())
                     .orElse(new ArrayList<>())
                     .stream()
                     .map(SimpleGrantedAuthority::new)
                     .toList();
-            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user,
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(eUser,
                     null, authorities);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);

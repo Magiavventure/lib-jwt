@@ -37,7 +37,8 @@ public class SecurityConfig {
 
         addRequestMatchers(httpSecurity, jwtProperties);
 
-        httpSecurity.addFilterBefore(jwtAuthenticationFilter(jwtProperties, jwtService, defaultExceptionHandler),
+        httpSecurity.addFilterBefore(jwtAuthenticationFilter(jwtProperties, jwtService,
+                        defaultExceptionHandler),
                 UsernamePasswordAuthenticationFilter.class);
 
         httpSecurity
@@ -80,7 +81,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
