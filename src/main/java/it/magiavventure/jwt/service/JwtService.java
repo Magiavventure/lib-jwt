@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.error.JwtException;
+import it.magiavventure.mongo.entity.EUser;
 import it.magiavventure.mongo.model.User;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Component;
@@ -23,8 +24,10 @@ public class JwtService {
     private final JwtParser jwtParser;
     private final JwtProperties jwtProperties;
     private final ObjectMapper objectMapper;
+    private final UserJwtService userJwtService;
 
-    public JwtService(JwtProperties jwtProperties) {
+    public JwtService(JwtProperties jwtProperties, UserJwtService userJwtService) {
+        this.userJwtService = userJwtService;
         this.jwtProperties = jwtProperties;
         this.jwtParser = Jwts
                 .parser()
@@ -66,21 +69,18 @@ public class JwtService {
             throw MagiavventureException.of(JwtException.JWT_NOT_VALID);
         }
     }
-
-    public String resolveAndValidateToken(HttpServletRequest request) {
-        String token = resolveToken(request);
-        parseJwtClaims(token);
-        return token;
-    }
     
-    public User getUser(String jwt) {
+    public EUser extractUser(String jwt) {
         Claims claims = parseJwtClaims(jwt);
-        return Optional.ofNullable(claims)
+        Optional<EUser> optionalEUser = Optional.ofNullable(claims)
                 .map(c -> objectMapper.convertValue(c, User.class))
-                .orElse(null);
+                .map(user -> userJwtService.retrieveById(user.getId()));
+        optionalEUser
+                .ifPresent(userJwtService::validateUser);
+        return optionalEUser.orElse(null);
     }
 
-    private String resolveToken(HttpServletRequest request) {
+    public String resolveToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(jwtProperties.getHeader()))
                 .filter(token -> !token.isEmpty() && !token.isBlank())
                 .orElseThrow(() -> MagiavventureException.of(JwtException.JWT_NOT_VALID));

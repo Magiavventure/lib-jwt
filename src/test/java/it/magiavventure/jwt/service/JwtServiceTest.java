@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.model.Error;
 import it.magiavventure.jwt.config.JwtProperties;
+import it.magiavventure.mongo.entity.EUser;
 import it.magiavventure.mongo.model.Category;
 import it.magiavventure.mongo.model.User;
 import org.junit.jupiter.api.Assertions;
@@ -12,10 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.InjectMocks;
-import org.mockito.Spy;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -27,6 +25,9 @@ import java.util.UUID;
 class JwtServiceTest {
     @InjectMocks
     private JwtService jwtService;
+
+    @Mock
+    private UserJwtService userJwtService;
 
     @Spy
     private JwtProperties jwtProperties = buildJwtProperties();
@@ -51,27 +52,31 @@ class JwtServiceTest {
         User user = buildUser();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", jwtService.buildJwt(user));
-        String token = jwtService.resolveAndValidateToken(request);
+
+        Mockito.when(userJwtService.retrieveById(user.getId()))
+                .thenReturn(EUser.builder().build());
+
+        String token = jwtService.resolveToken(request);
         Assertions.assertNotNull(token);
         Claims claims = jwtService.parseJwtClaims(token);
         Assertions.assertNotNull(claims);
         Assertions.assertEquals(user.getId().toString(), claims.getSubject());
-        User userFromJwt = jwtService.getUser(token);
-        Assertions.assertNotNull(userFromJwt);
-        Assertions.assertEquals(user.getId(), userFromJwt.getId());
-        Assertions.assertEquals(user.getName(), userFromJwt.getName());
-        Assertions.assertIterableEquals(user.getPreferredCategories(), userFromJwt.getPreferredCategories());
-        Assertions.assertIterableEquals(user.getAuthorities(), userFromJwt.getAuthorities());
+
+        EUser eUser = jwtService.extractUser(token);
+
+        Mockito.verify(userJwtService).retrieveById(user.getId());
+
+        Assertions.assertNotNull(eUser);
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", " ", "fwefwefwefwefw"})
-    @DisplayName("Get empty JWT from request to parse")
+    @ValueSource(strings = {"", " "})
+    @DisplayName("Get empty/blank JWT from request to parse")
     void givenEmptyJwt_throwException_ok(String token) {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", token);
         MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
-                () -> jwtService.resolveAndValidateToken(request));
+                () -> jwtService.resolveToken(request));
 
         Assertions.assertNotNull(exception);
         Error error = exception.getError();
@@ -80,13 +85,24 @@ class JwtServiceTest {
     }
 
     @Test
-    @DisplayName("Get expired JWT from request to parse")
+    @DisplayName("Parse wrong JWT throw exception")
+    void givenWrongJwt_parse_throwException() {
+        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
+                () -> jwtService.parseJwtClaims("fowefweofbwefw"));
+
+        Assertions.assertNotNull(exception);
+        Error error = exception.getError();
+        Assertions.assertNotNull(error);
+        Assertions.assertEquals("jwt-not-valid", error.getKey());
+    }
+
+    @Test
+    @DisplayName("Parse expired JWT throw exception")
     void givenExpiredJwt_throwException_ok() {
         User user = buildUser();
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader("mg-a-token", buildToken(user));
+        String expiredToken = buildToken(user);
         MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
-                () -> jwtService.resolveAndValidateToken(request));
+                () -> jwtService.parseJwtClaims(expiredToken));
 
         Assertions.assertNotNull(exception);
         Error error = exception.getError();
@@ -133,7 +149,7 @@ class JwtServiceTest {
     private String buildToken(User user) {
         JwtProperties jwtProperties = buildJwtProperties();
         jwtProperties.setValidity(-3L);
-        JwtService jwtService = new JwtService(jwtProperties);
+        JwtService jwtService = new JwtService(jwtProperties, userJwtService);
         return jwtService.buildJwt(user);
     }
 }
