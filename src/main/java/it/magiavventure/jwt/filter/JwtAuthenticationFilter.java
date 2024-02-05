@@ -5,6 +5,7 @@ import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.error.handler.DefaultExceptionHandler;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
+import it.magiavventure.jwt.config.AppContext;
 import it.magiavventure.jwt.service.JwtService;
 import it.magiavventure.mongo.entity.EUser;
 import jakarta.servlet.FilterChain;
@@ -31,12 +32,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final DefaultExceptionHandler defaultExceptionHandler;
+    private final AppContext appContext;
 
     public JwtAuthenticationFilter(JwtService jwtService, JwtProperties jwtProperties,
-                                   DefaultExceptionHandler defaultExceptionHandler) {
+                                   DefaultExceptionHandler defaultExceptionHandler, AppContext appContext) {
         this.jwtService = jwtService;
         this.jwtProperties = jwtProperties;
         this.defaultExceptionHandler = defaultExceptionHandler;
+        this.appContext = appContext;
     }
 
     @Override
@@ -46,6 +49,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String token = jwtService.resolveToken(request);
             EUser eUser = jwtService.extractUser(token);
+            appContext.setJwt(token);
+            appContext.setUser(eUser);
             List<SimpleGrantedAuthority> authorities = Optional.ofNullable(eUser.getAuthorities())
                     .orElse(new ArrayList<>())
                     .stream()

@@ -29,7 +29,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity,
                                                    JwtProperties jwtProperties, JwtService jwtService,
-                                                   DefaultExceptionHandler defaultExceptionHandler) throws Exception {
+                                                   DefaultExceptionHandler defaultExceptionHandler,
+                                                   AppContext appContext) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
@@ -38,7 +39,7 @@ public class SecurityConfig {
         addRequestMatchers(httpSecurity, jwtProperties);
 
         httpSecurity.addFilterBefore(jwtAuthenticationFilter(jwtProperties, jwtService,
-                        defaultExceptionHandler),
+                        defaultExceptionHandler, appContext),
                 UsernamePasswordAuthenticationFilter.class);
 
         httpSecurity
@@ -76,8 +77,9 @@ public class SecurityConfig {
 
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(JwtProperties jwtProperties, JwtService jwtService,
-                                                           DefaultExceptionHandler defaultExceptionHandler) {
-        return new JwtAuthenticationFilter(jwtService, jwtProperties, defaultExceptionHandler);
+                                                           DefaultExceptionHandler defaultExceptionHandler,
+                                                           AppContext appContext) {
+        return new JwtAuthenticationFilter(jwtService, jwtProperties, defaultExceptionHandler, appContext);
     }
 
     @Bean
