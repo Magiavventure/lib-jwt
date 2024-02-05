@@ -9,6 +9,7 @@ import it.magiavventure.common.mapper.HttpErrorMapper;
 import it.magiavventure.common.model.HttpError;
 import it.magiavventure.jwt.config.JwtProperties;
 import it.magiavventure.jwt.config.JwtProperties.EndpointProperties;
+import it.magiavventure.jwt.config.AppContext;
 import it.magiavventure.jwt.service.JwtService;
 import it.magiavventure.jwt.service.UserJwtService;
 import it.magiavventure.mongo.entity.EUser;
@@ -43,10 +44,12 @@ class JwtAuthenticationFilterTest {
     @BeforeEach
     void beforeEach() {
         JwtProperties jwtProperties = buildJwtProperties();
+        AppContext appContext = new AppContext();
         JwtService jwtService = new JwtService(jwtProperties, userJwtService);
         DefaultExceptionHandler defaultExceptionHandler = new DefaultExceptionHandler(buildCommonProperties(),
                 Mappers.getMapper(HttpErrorMapper.class));
-        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtService, jwtProperties, defaultExceptionHandler);
+        this.jwtAuthenticationFilter = new JwtAuthenticationFilter(jwtService, jwtProperties,
+                defaultExceptionHandler, appContext);
     }
 
     @Test
