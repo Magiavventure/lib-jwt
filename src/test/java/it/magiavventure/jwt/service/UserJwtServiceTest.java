@@ -85,4 +85,34 @@ class UserJwtServiceTest {
         Assertions.assertDoesNotThrow(() -> userJwtService.validateUser(eUser));
     }
 
+    @Test
+    @DisplayName("Given user and id value check ownership")
+    void givenUserAndIdValue_checkOwnership_ok() {
+        UUID id = UUID.randomUUID();
+        EUser eUser = EUser.builder().id(UUID.randomUUID()).name("name").build();
+        EUser eUserCorrect = EUser.builder().id(id).build();
+
+        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
+                () -> userJwtService.validateOwnership(eUser, id));
+        Assertions.assertDoesNotThrow(() -> userJwtService.validateOwnership(eUserCorrect, id));
+
+        Assertions.assertNotNull(exception);
+        Assertions.assertEquals("jwt-access-denied", exception.getError().getKey());
+    }
+
+    @Test
+    @DisplayName("Given user and name value check ownership")
+    void givenUserAndNameValue_checkOwnership_ok() {
+        String name = "name";
+        EUser eUser = EUser.builder().id(UUID.randomUUID()).name("name2").build();
+        EUser eUserCorrect = EUser.builder().name(name).build();
+
+        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
+                () -> userJwtService.validateOwnership(eUser, name));
+        Assertions.assertDoesNotThrow(() -> userJwtService.validateOwnership(eUserCorrect, name));
+
+        Assertions.assertNotNull(exception);
+        Assertions.assertEquals("jwt-access-denied", exception.getError().getKey());
+    }
+
 }
