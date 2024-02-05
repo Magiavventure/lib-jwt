@@ -1,6 +1,7 @@
 package it.magiavventure.jwt.service;
 
 import it.magiavventure.common.error.MagiavventureException;
+import it.magiavventure.jwt.config.AppContext;
 import it.magiavventure.jwt.error.JwtException;
 import it.magiavventure.mongo.entity.EUser;
 import it.magiavventure.mongo.repository.UserRepository;
@@ -31,6 +32,13 @@ public class UserJwtService {
         if(Objects.nonNull(banExpiration) && banExpiration.isAfter(LocalDateTime.now())) {
             throw MagiavventureException.of(JwtException.USER_BLOCKED);
         }
+    }
+
+    public void validateOwnership(EUser eUser, Object value) {
+        if(value instanceof UUID && !value.equals(eUser.getId()))
+            throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
+        if(value instanceof String && !value.equals(eUser.getName()))
+            throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
     }
 
 }
