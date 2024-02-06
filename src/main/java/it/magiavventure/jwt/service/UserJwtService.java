@@ -18,8 +18,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class UserJwtService {
-    public static final String USER_AUTHORITY = "user";
-    public static final String ADMIN_AUTHORITY = "admin";
+
     private final UserRepository userRepository;
 
     @Cacheable(value = "user_entity", key = "#p0")
@@ -34,14 +33,6 @@ public class UserJwtService {
         if(Objects.nonNull(banExpiration) && banExpiration.isAfter(LocalDateTime.now())) {
             throw MagiavventureException.of(JwtException.USER_BLOCKED);
         }
-    }
-
-    public void validateOwnership(EUser eUser, Object value) {
-        if(eUser.getAuthorities().contains(ADMIN_AUTHORITY)) return;
-        if(value instanceof UUID && !value.equals(eUser.getId()))
-            throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
-        if(value instanceof String && !value.equals(eUser.getName()))
-            throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
     }
 
 }
