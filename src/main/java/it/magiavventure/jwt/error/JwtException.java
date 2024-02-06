@@ -9,6 +9,8 @@ public class JwtException extends MagiavventureException {
     public static final String JWT_ACCESS_DENIED = "jwt-access-denied";
     public static final String USER_BLOCKED = "user-blocked";
     public static final String USER_NOT_FOUND = "user-not-found";
+    public static final String OWNERSHIP = "ownership";
+    public static final String NO_OWNERSHIP_CHECK = "no-ownership-check";
 
     public JwtException(Error error) {
         super(error);
