@@ -53,8 +53,7 @@ class UserJwtServiceTest {
                 () -> userJwtService.retrieveById(id));
 
         Assertions.assertNotNull(exception);
-        Assertions.assertEquals("user-not-found", exception.getError().getKey());
-        Assertions.assertIterableEquals(List.of(id.toString()), Arrays.asList(exception.getError().getArgs()));
+        Assertions.assertEquals("not-authenticated", exception.getError().getKey());
     }
 
     @Test
@@ -66,7 +65,7 @@ class UserJwtServiceTest {
                 () -> userJwtService.validateUser(eUser));
 
         Assertions.assertNotNull(exception);
-        Assertions.assertEquals("user-blocked", exception.getError().getKey());
+        Assertions.assertEquals("not-authenticated", exception.getError().getKey());
     }
 
     @Test

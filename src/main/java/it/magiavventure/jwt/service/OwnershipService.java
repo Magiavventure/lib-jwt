@@ -32,6 +32,6 @@ public class OwnershipService {
     private EUser retrieveCurrentUser() {
         return Optional.ofNullable(appContext)
                 .map(AppContext::getUser)
-                .orElseThrow(() -> MagiavventureException.of(JwtException.NO_OWNERSHIP_CHECK));
+                .orElseThrow(() -> MagiavventureException.of(JwtException.NOT_AUTHENTICATED));
     }
 }

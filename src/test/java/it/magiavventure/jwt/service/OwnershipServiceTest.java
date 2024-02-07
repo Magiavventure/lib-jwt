@@ -57,7 +57,7 @@ class OwnershipServiceTest {
     }
 
     @Test
-    @DisplayName("Given id value and null user throw no ownership check exception")
+    @DisplayName("Given id value and null user throw not authenticated exception")
     void givenIdValueAndNullUser_throwNoOwnershipCheckException() {
         UUID id = UUID.randomUUID();
         appContext.setUser(null);
@@ -66,7 +66,7 @@ class OwnershipServiceTest {
                 () -> ownershipService.validateOwnership(id));
 
         Assertions.assertNotNull(noOwnershipException);
-        Assertions.assertEquals("no-ownership-check", noOwnershipException.getError().getKey());
+        Assertions.assertEquals("not-authenticated", noOwnershipException.getError().getKey());
     }
 
     @Test
@@ -104,7 +104,7 @@ class OwnershipServiceTest {
     }
 
     @Test
-    @DisplayName("Given name value and null user throw no ownership check exception")
+    @DisplayName("Given name value and null user throw not authenticated exception")
     void givenNameValueAndNullUser_throwNoOwnershipCheckException() {
         String name = "name";
         appContext.setUser(null);
@@ -113,7 +113,7 @@ class OwnershipServiceTest {
                 () -> ownershipService.validateOwnership(name));
 
         Assertions.assertNotNull(noOwnershipException);
-        Assertions.assertEquals("no-ownership-check", noOwnershipException.getError().getKey());
+        Assertions.assertEquals("not-authenticated", noOwnershipException.getError().getKey());
     }
 
 }

@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
                         httpSecurityExceptionHandlingConfigurer
                                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                                    throw MagiavventureException.of(JwtException.JWT_ACCESS_DENIED);
+                                    throw MagiavventureException.of(JwtException.ACCESS_DENIED);
                                 }
                         ));
 

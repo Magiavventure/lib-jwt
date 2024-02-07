@@ -4,13 +4,9 @@ import it.magiavventure.common.error.MagiavventureException;
 import it.magiavventure.common.model.Error;
 
 public class JwtException extends MagiavventureException {
-    public static final String JWT_EXPIRED = "jwt-expired";
-    public static final String JWT_NOT_VALID = "jwt-not-valid";
-    public static final String JWT_ACCESS_DENIED = "jwt-access-denied";
-    public static final String USER_BLOCKED = "user-blocked";
-    public static final String USER_NOT_FOUND = "user-not-found";
+    public static final String NOT_AUTHENTICATED = "not-authenticated";
+    public static final String ACCESS_DENIED = "access-denied";
     public static final String OWNERSHIP = "ownership";
-    public static final String NO_OWNERSHIP_CHECK = "no-ownership-check";
 
     public JwtException(Error error) {
         super(error);
