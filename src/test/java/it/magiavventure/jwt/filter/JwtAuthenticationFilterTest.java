@@ -84,7 +84,7 @@ class JwtAuthenticationFilterTest {
     }
 
     @Test
-    @DisplayName("Given an expired jwt filter throw exception with code jwt-expired")
+    @DisplayName("Given an expired jwt filter throw exception with code not-authenticated")
     void givenExpiredJwt_throwExpiredException_ok() throws ServletException, IOException {
         User user = buildUser(UUID.randomUUID());
         MockHttpServletRequest request = new MockHttpServletRequest();
@@ -98,14 +98,14 @@ class JwtAuthenticationFilterTest {
         ObjectMapper objectMapper = new ObjectMapper();
         HttpError error = objectMapper.readValue(response.getContentAsByteArray(), HttpError.class);
         Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-expired", error.getCode());
-        Assertions.assertEquals("jwt scaduto", error.getMessage());
-        Assertions.assertEquals("jwt scaduto", error.getDescription());
+        Assertions.assertEquals("not-authenticated", error.getCode());
+        Assertions.assertEquals("non autenticato", error.getMessage());
+        Assertions.assertEquals("non autenticato", error.getDescription());
         Assertions.assertEquals(401, error.getStatus());
     }
 
     @Test
-    @DisplayName("Given a null jwt filter throw exception with code jwt-not-valid")
+    @DisplayName("Given a null jwt filter throw exception with code not-authenticated")
     void givenNullJwt_throwNotValidException_ok() throws ServletException, IOException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.addHeader("mg-a-token", "");
@@ -118,9 +118,9 @@ class JwtAuthenticationFilterTest {
         ObjectMapper objectMapper = new ObjectMapper();
         HttpError error = objectMapper.readValue(response.getContentAsByteArray(), HttpError.class);
         Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-not-valid", error.getCode());
-        Assertions.assertEquals("jwt non valido", error.getMessage());
-        Assertions.assertEquals("jwt non valido", error.getDescription());
+        Assertions.assertEquals("not-authenticated", error.getCode());
+        Assertions.assertEquals("non autenticato", error.getMessage());
+        Assertions.assertEquals("non autenticato", error.getDescription());
         Assertions.assertEquals(401, error.getStatus());
     }
 
@@ -203,19 +203,12 @@ class JwtAuthenticationFilterTest {
         CommonProperties commonProperties = new CommonProperties();
         ErrorsProperties errorsProperties = new ErrorsProperties();
         Map<String, ErrorMessage> jwtErrors = new HashMap<>();
-        jwtErrors.put("jwt-not-valid", ErrorMessage
+        jwtErrors.put("not-authenticated", ErrorMessage
                 .builder()
-                        .code("jwt-not-valid")
-                        .description("jwt non valido")
-                        .message("jwt non valido")
+                        .code("not-authenticated")
+                        .description("non autenticato")
+                        .message("non autenticato")
                         .status(401)
-                .build());
-        jwtErrors.put("jwt-expired", ErrorMessage
-                .builder()
-                .code("jwt-expired")
-                .description("jwt scaduto")
-                .message("jwt scaduto")
-                .status(401)
                 .build());
         errorsProperties.setJwtErrorsMessages(jwtErrors);
         commonProperties.setErrors(errorsProperties);

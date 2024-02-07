@@ -1,7 +1,6 @@
 package it.magiavventure.jwt.service;
 
 import it.magiavventure.common.error.MagiavventureException;
-import it.magiavventure.jwt.config.AppContext;
 import it.magiavventure.jwt.error.JwtException;
 import it.magiavventure.mongo.entity.EUser;
 import it.magiavventure.mongo.repository.UserRepository;
@@ -21,17 +20,19 @@ public class UserJwtService {
 
     private final UserRepository userRepository;
 
-    @Cacheable(value = "user_entity", key = "#p0")
+    @Cacheable(value = "user", key = "#p0")
     public EUser retrieveById(UUID id) {
-        return userRepository
+        EUser eUser = userRepository
                 .findById(id)
-                .orElseThrow(() -> MagiavventureException.of(JwtException.USER_NOT_FOUND, id.toString()));
+                .orElseThrow(() -> MagiavventureException.of(JwtException.NOT_AUTHENTICATED));
+        validateUser(eUser);
+        return eUser;
     }
 
     public void validateUser(EUser eUser) {
         LocalDateTime banExpiration = eUser.getBanExpiration();
         if(Objects.nonNull(banExpiration) && banExpiration.isAfter(LocalDateTime.now())) {
-            throw MagiavventureException.of(JwtException.USER_BLOCKED);
+            throw MagiavventureException.of(JwtException.NOT_AUTHENTICATED);
         }
     }
 

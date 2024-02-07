@@ -69,6 +69,31 @@ class JwtServiceTest {
         Assertions.assertNotNull(eUser);
     }
 
+    @Test
+    @DisplayName("Get valid JWT from request to parse for get user but user is not found")
+    void givenValidJwt_parseClaims_butUserIsNotFound() {
+        User user = buildUser();
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("mg-a-token", jwtService.buildJwt(user));
+
+        Mockito.when(userJwtService.retrieveById(user.getId()))
+                .thenReturn(null);
+
+        String token = jwtService.resolveToken(request);
+        Assertions.assertNotNull(token);
+        Claims claims = jwtService.parseJwtClaims(token);
+        Assertions.assertNotNull(claims);
+        Assertions.assertEquals(user.getId().toString(), claims.getSubject());
+
+        MagiavventureException exception = Assertions.assertThrows(MagiavventureException.class,
+                () -> jwtService.extractUser(token));
+
+        Mockito.verify(userJwtService).retrieveById(user.getId());
+
+        Assertions.assertNotNull(exception);
+        Assertions.assertEquals("not-authenticated", exception.getError().getKey());
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"", " "})
     @DisplayName("Get empty/blank JWT from request to parse")
@@ -81,7 +106,7 @@ class JwtServiceTest {
         Assertions.assertNotNull(exception);
         Error error = exception.getError();
         Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-not-valid", error.getKey());
+        Assertions.assertEquals("not-authenticated", error.getKey());
     }
 
     @Test
@@ -93,7 +118,7 @@ class JwtServiceTest {
         Assertions.assertNotNull(exception);
         Error error = exception.getError();
         Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-not-valid", error.getKey());
+        Assertions.assertEquals("not-authenticated", error.getKey());
     }
 
     @Test
@@ -107,7 +132,7 @@ class JwtServiceTest {
         Assertions.assertNotNull(exception);
         Error error = exception.getError();
         Assertions.assertNotNull(error);
-        Assertions.assertEquals("jwt-expired", error.getKey());
+        Assertions.assertEquals("not-authenticated", error.getKey());
     }
 
     @Test

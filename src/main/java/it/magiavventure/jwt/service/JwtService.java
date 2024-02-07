@@ -63,27 +63,23 @@ public class JwtService {
     public Claims parseJwtClaims(String jwt) {
         try {
             return jwtParser.parseSignedClaims(jwt).getPayload();
-        } catch (ExpiredJwtException exception) {
-            throw MagiavventureException.of(JwtException.JWT_EXPIRED);
         } catch (io.jsonwebtoken.JwtException | IllegalArgumentException exception) {
-            throw MagiavventureException.of(JwtException.JWT_NOT_VALID);
+            throw MagiavventureException.of(JwtException.NOT_AUTHENTICATED);
         }
     }
     
     public EUser extractUser(String jwt) {
         Claims claims = parseJwtClaims(jwt);
-        Optional<EUser> optionalEUser = Optional.ofNullable(claims)
+        return Optional.ofNullable(claims)
                 .map(c -> objectMapper.convertValue(c, User.class))
-                .map(user -> userJwtService.retrieveById(user.getId()));
-        optionalEUser
-                .ifPresent(userJwtService::validateUser);
-        return optionalEUser.orElse(null);
+                .map(user -> userJwtService.retrieveById(user.getId()))
+                .orElseThrow(() -> MagiavventureException.of(JwtException.NOT_AUTHENTICATED));
     }
 
     public String resolveToken(HttpServletRequest request) {
         return Optional.ofNullable(request.getHeader(jwtProperties.getHeader()))
                 .filter(token -> !token.isEmpty() && !token.isBlank())
-                .orElseThrow(() -> MagiavventureException.of(JwtException.JWT_NOT_VALID));
+                .orElseThrow(() -> MagiavventureException.of(JwtException.NOT_AUTHENTICATED));
     }
 
     private Date getExpiration() {
