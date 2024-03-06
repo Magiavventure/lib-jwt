@@ -13,6 +13,15 @@ public class JwtProperties {
     private String header;
     private List<EndpointProperties> endpoints;
     private List<EndpointProperties> excludedEndpoints;
+    private CorsProperties cors;
+
+    @Data
+    public static class CorsProperties {
+        private List<String> allowedOrigins;
+        private List<String> allowedMethods;
+        private List<String> allowedHeaders;
+        private List<String> exposedHeaders;
+    }
 
     @Data
     public static class EndpointProperties {
