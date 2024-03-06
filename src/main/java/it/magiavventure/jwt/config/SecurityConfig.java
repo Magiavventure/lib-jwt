@@ -16,6 +16,9 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -33,6 +36,8 @@ public class SecurityConfig {
                                                    AppContext appContext) throws Exception {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(httpSecurityCorsConfigurer ->
+                        httpSecurityCorsConfigurer.configurationSource(corsConfigurationSource(jwtProperties)))
                 .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -73,6 +78,18 @@ public class SecurityConfig {
                     });
             requests.anyRequest().authenticated();
         });
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(JwtProperties jwtProperties) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(jwtProperties.getCors().getAllowedOrigins());
+        configuration.setAllowedMethods(jwtProperties.getCors().getAllowedMethods());
+        configuration.setAllowedHeaders(jwtProperties.getCors().getAllowedHeaders());
+        configuration.setExposedHeaders(jwtProperties.getCors().getExposedHeaders());
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
